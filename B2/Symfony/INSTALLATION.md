@@ -138,13 +138,13 @@ docker compose logs database
 > 
 > **📝 Note :** Adminer n'est pas inclus par défaut. Pour ajouter PostgreSQL + Adminer, consultez le guide [AJOUT-ADMINER.md](AJOUT-ADMINER.md).
 
-## � ÉTAPES SUIVANTES
+## 📝 ÉTAPES SUIVANTES
 
 ### 1️⃣ **PREMIÈRE ÉTAPE OBLIGATOIRE :** Ajouter une Base de Données
 👉 **[AJOUT-ADMINER.md](AJOUT-ADMINER.md)** - Installer PostgreSQL + Adminer (interface graphique)
 
 ### 2️⃣ **Pour Développer :**
-- � **[ENTITES.md](ENTITES.md)** - Créer des entités et tables de base de données
+- 🏗️ **[ENTITES.md](ENTITES.md)** - Créer des entités et tables de base de données
 - 💾 **[DONNEES-BDD.md](DONNEES-BDD.md)** - Manipuler les données via commandes
 - 🌐 **[API-PLATFORM.md](API-PLATFORM.md)** - Créer des APIs REST modernes
 - 🎨 **[NODEJS.md](NODEJS.md)** - Utiliser Node.js et NPM pour le frontend

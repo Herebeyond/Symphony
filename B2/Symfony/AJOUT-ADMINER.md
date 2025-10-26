@@ -9,7 +9,7 @@ Le template officiel `dunglas/symfony-docker` utilise **PostgreSQL** par défaut
 
 ## ⚠️ Prérequis
 
-- Avoir suivi le guide d'installation principal [README.md](README.md)
+- Avoir suivi le guide d'installation principal [INSTALLATION.md](INSTALLATION.md)
 - Votre projet Symfony Docker fonctionne déjà
 - **Important :** Le template de base n'inclut **PAS** Doctrine ORM ni PostgreSQL par défaut - ces composants seront installés dans ce guide
 
@@ -170,7 +170,7 @@ Maintenant qu'Adminer est installé :
 ---
 
 **🔗 Guides Connexes :**
-- [README.md](README.md) - Installation principale
+- [INSTALLATION.md](INSTALLATION.md) - Installation principale
 - [ENTITES.md](ENTITES.md) - Création d'entités Symfony
 - [DONNEES-BDD.md](DONNEES-BDD.md) - Manipulation des données via commandes
 - [DEPANNAGE.md](DEPANNAGE.md) - Solutions aux problèmes courants

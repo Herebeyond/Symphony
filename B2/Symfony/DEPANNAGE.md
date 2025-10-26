@@ -698,7 +698,7 @@ docker compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}"
 ---
 
 **📝 Documentation Connexe :**
-- [README.md](README.md) - Guide de Démarrage Rapide
+- [INSTALLATION.md](INSTALLATION.md) - Guide de Démarrage Rapide
 - [ENTITES.md](ENTITES.md) - Guide de Gestion des Entités
 - [DONNEES-BDD.md](DONNEES-BDD.md) - Manipulation des données via commandes
 - [AJOUT-ADMINER.md](AJOUT-ADMINER.md) - Installation PostgreSQL + Adminer

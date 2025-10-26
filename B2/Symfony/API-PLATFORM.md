@@ -15,7 +15,7 @@ API Platform est un framework puissant pour créer des APIs REST et GraphQL avec
 ## ⚠️ PRÉREQUIS
 
 **AVANT DE COMMENCER :**
-- ✅ **Symfony Docker** doit être installé et fonctionnel (voir [README.md](README.md))
+- ✅ **Symfony Docker** doit être installé et fonctionnel (voir [INSTALLATION.md](INSTALLATION.md))
 - ✅ **Containers Docker** en cours d'exécution (`docker compose up -d`)
 - ✅ **Entités Doctrine** existantes (optionnel mais recommandé)
 

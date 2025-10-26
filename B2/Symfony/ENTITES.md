@@ -206,11 +206,11 @@ docker compose ps
 ```powershell
 # Vider le cache et régénérer
 docker compose exec php bin/console cache:clear
-docker compose exec php bin/console make:migration
+docker compose exec php bin/console doctrine:migrations:migrate
 ```
 
 ---
 
-**� Guides Connexes :**
+**🔗 Guides Connexes :**
 - [AJOUT-ADMINER.md](AJOUT-ADMINER.md) - Installation PostgreSQL + Adminer
 - [DEPANNAGE.md](DEPANNAGE.md) - Solutions aux problèmes courants
