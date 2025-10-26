@@ -1,8 +1,7 @@
-FAILLE IDOR (Insecure Direct Object Reference)
-==============================================
+# FAILLE IDOR (Insecure Direct Object Reference)
 
-INTRODUCTION
-------------
+## INTRODUCTION
+
 IDOR est une vulnérabilité permettant à un attaquant d'accéder directement à des objets (fichiers, 
 données, ressources) en manipulant les identifiants sans vérification d'autorisation appropriée.
 
@@ -10,52 +9,54 @@ L'attaquant exploite le fait que l'application utilise des identifiants prévisi
 pour référencer directement des ressources, sans vérifier si l'utilisateur a réellement le droit 
 d'y accéder.
 
-________________________________________
+---
 
-FONCTIONNEMENT
---------------
+## FONCTIONNEMENT
+
 L'attaquant modifie un paramètre d'identifiant dans l'URL, un formulaire ou une requête API pour 
 accéder à des ressources qui ne lui appartiennent pas.
 
-Exemple :
-  URL vulnérable : /api/users/123/profile
-  Attaque : /api/users/124/profile (accès au profil d'un autre utilisateur)
+**Exemple :**
+```
+URL vulnérable : /api/users/123/profile
+Attaque : /api/users/124/profile (accès au profil d'un autre utilisateur)
+```
 
 Le site ne vérifie pas si l'utilisateur connecté a le droit d'accéder à la ressource demandée, 
 il se contente de vérifier que la ressource existe.
 
-________________________________________
+---
 
-EXEMPLES CONCRETS
------------------
-1. /invoices/1001 → /invoices/1002 (factures d'autres clients)
+## EXEMPLES CONCRETS
 
-2. /documents/download?file=user_123.pdf → file=user_124.pdf
+1. `/invoices/1001` → `/invoices/1002` (factures d'autres clients)
 
-3. /api/orders/456 → /api/orders/457 (commandes d'autres utilisateurs)
+2. `/documents/download?file=user_123.pdf` → `file=user_124.pdf`
 
-4. /profile/edit/10 → /profile/edit/11 (modification du profil d'autrui)
+3. `/api/orders/456` → `/api/orders/457` (commandes d'autres utilisateurs)
 
-5. /messages/read/99 → /messages/read/100 (lecture de messages privés d'autrui)
+4. `/profile/edit/10` → `/profile/edit/11` (modification du profil d'autrui)
 
-________________________________________
+5. `/messages/read/99` → `/messages/read/100` (lecture de messages privés d'autrui)
 
-CONSÉQUENCES POSSIBLES
-----------------------
-• Accès non autorisé aux données sensibles
-• Modification ou suppression de ressources d'autres utilisateurs
-• Violation de la confidentialité
-• Vol d'informations personnelles
-• Manipulation de données financières
+---
+
+## CONSÉQUENCES POSSIBLES
+
+• Accès non autorisé aux données sensibles  
+• Modification ou suppression de ressources d'autres utilisateurs  
+• Violation de la confidentialité  
+• Vol d'informations personnelles  
+• Manipulation de données financières  
 • Usurpation de compte
 
-________________________________________
+---
 
-PROTECTION
-----------
+## PROTECTION
+
 Plusieurs techniques permettent d'éviter les failles IDOR :
 
-• Vérifier SYSTÉMATIQUEMENT les autorisations avant chaque accès
+• Vérifier **SYSTÉMATIQUEMENT** les autorisations avant chaque accès
 
 • Utiliser des identifiants non prédictibles (UUID au lieu d'auto-increment)
 
@@ -67,21 +68,22 @@ Plusieurs techniques permettent d'éviter les failles IDOR :
 
 • Logger les tentatives d'accès non autorisées
 
-________________________________________
+---
 
-CAS SYMFONY
------------
+## CAS SYMFONY
+
 Symfony offre plusieurs mécanismes pour se protéger contre IDOR :
 
-• Security Voters pour vérifier les permissions
-• Expressions de sécurité dans les routes
-• Extensions Doctrine pour filtrer automatiquement les résultats
+• Security Voters pour vérifier les permissions  
+• Expressions de sécurité dans les routes  
+• Extensions Doctrine pour filtrer automatiquement les résultats  
 • API Platform avec contrôles d'accès intégrés
 
-________________________________________
+---
 
-EXEMPLES SYMFONY
-----------------
+## EXEMPLES SYMFONY
+
+```php
 // Mauvais exemple (VULNÉRABLE)
 #[Route('/invoice/{id}')]
 public function show(Invoice $invoice): Response
@@ -127,21 +129,22 @@ class Invoice
         $this->id = Uuid::v4();  // Génère un UUID aléatoire non prévisible
     }
 }
+```
 
-________________________________________
+---
 
-OUTILS DE DÉTECTION
--------------------
-• Tests manuels en modifiant les IDs dans les URLs
-• Burp Suite pour automatiser les tests
-• OWASP ZAP
-• Tests d'intrusion automatisés
+## OUTILS DE DÉTECTION
+
+• Tests manuels en modifiant les IDs dans les URLs  
+• Burp Suite pour automatiser les tests  
+• OWASP ZAP  
+• Tests d'intrusion automatisés  
 • Code review et audits de sécurité
 
-________________________________________
+---
 
-CONCLUSION
-----------
+## CONCLUSION
+
 Les failles IDOR sont parmi les plus simples à exploiter mais aussi parmi les plus faciles à 
 prévenir avec une bonne architecture.
 
@@ -149,10 +152,10 @@ Dans notre cas, Symfony offre des outils robustes (Voters, expressions de sécur
 sont systématiquement utilisés, permettent de vérifier les autorisations et de prévenir efficacement 
 ces vulnérabilités.
 
-La règle d'or : ne JAMAIS faire confiance à un identifiant fourni par l'utilisateur sans vérifier 
-ses permissions.
+**La règle d'or : ne JAMAIS faire confiance à un identifiant fourni par l'utilisateur sans vérifier 
+ses permissions.**
 
-________________________________________
+---
 
-NIVEAU DE RISQUE : ÉLEVÉ
-FACILITÉ D'EXPLOITATION : TRÈS FACILE
+**NIVEAU DE RISQUE : ÉLEVÉ**  
+**FACILITÉ D'EXPLOITATION : TRÈS FACILE**

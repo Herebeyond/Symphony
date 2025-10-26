@@ -1,8 +1,7 @@
-FAILLE MVC (Model-View-Controller)
-===================================
+# FAILLE MVC (Model-View-Controller)
 
-INTRODUCTION
-------------
+## INTRODUCTION
+
 Les vulnérabilités liées à l'architecture MVC surviennent lorsque la séparation des responsabilités 
 n'est pas correctement respectée, permettant des accès non autorisés ou des manipulations de données.
 
@@ -12,46 +11,46 @@ en trois composants principaux : le Modèle (données), la Vue (présentation) e
 Lorsque ces responsabilités ne sont pas strictement séparées, des failles de sécurité peuvent 
 apparaître.
 
-________________________________________
+---
 
-TYPES DE FAILLES MVC
---------------------
-1. Logique métier dans les vues
-   • Exposition de données sensibles directement dans les templates
-   • Traitement de données non validées côté présentation
+## TYPES DE FAILLES MVC
 
-2. Contrôleurs mal sécurisés
-   • Absence de vérification des permissions
-   • Validation insuffisante des entrées utilisateur
-   • Exposition directe des méthodes du modèle
+### 1. Logique métier dans les vues
+• Exposition de données sensibles directement dans les templates  
+• Traitement de données non validées côté présentation
 
-3. Modèles non protégés
-   • Mass assignment non contrôlé
-   • Accès direct aux propriétés sensibles
-   • Absence de validation au niveau du modèle
+### 2. Contrôleurs mal sécurisés
+• Absence de vérification des permissions  
+• Validation insuffisante des entrées utilisateur  
+• Exposition directe des méthodes du modèle
 
-________________________________________
+### 3. Modèles non protégés
+• Mass assignment non contrôlé  
+• Accès direct aux propriétés sensibles  
+• Absence de validation au niveau du modèle
 
-EXEMPLES D'EXPLOITATION
------------------------
-• Modification de paramètres non autorisés via mass assignment
-• Accès à des données sensibles via des vues mal configurées
+---
+
+## EXEMPLES D'EXPLOITATION
+
+• Modification de paramètres non autorisés via mass assignment  
+• Accès à des données sensibles via des vues mal configurées  
 • Bypassing de la logique métier en accédant directement aux modèles
 
-________________________________________
+---
 
-CONSÉQUENCES POSSIBLES
-----------------------
-• Accès non autorisé à des données sensibles
-• Modification de données critiques
-• Escalade de privilèges
-• Bypass de la logique métier
+## CONSÉQUENCES POSSIBLES
+
+• Accès non autorisé à des données sensibles  
+• Modification de données critiques  
+• Escalade de privilèges  
+• Bypass de la logique métier  
 • Exposition d'informations système
 
-________________________________________
+---
 
-PROTECTION
-----------
+## PROTECTION
+
 Plusieurs techniques permettent d'éviter les failles MVC :
 
 • Utiliser des FormTypes Symfony pour valider toutes les entrées
@@ -68,22 +67,23 @@ Plusieurs techniques permettent d'éviter les failles MVC :
 
 • Utiliser des normalizers pour contrôler la sérialisation
 
-________________________________________
+---
 
-CAS SYMFONY
------------
+## CAS SYMFONY
+
 Symfony offre plusieurs outils pour sécuriser l'architecture MVC :
 
-• Security Voters pour les permissions
-• FormTypes avec validation intégrée
-• Composant Validator pour les entités
-• Groupes de sérialisation API Platform
+• Security Voters pour les permissions  
+• FormTypes avec validation intégrée  
+• Composant Validator pour les entités  
+• Groupes de sérialisation API Platform  
 • DTOs pour API Platform
 
-________________________________________
+---
 
-EXEMPLES SYMFONY
-----------------
+## EXEMPLES SYMFONY
+
+```php
 // Mauvais exemple (VULNÉRABLE) - Mass Assignment
 #[Route('/user/update', methods: ['POST'])]
 public function update(Request $request, EntityManagerInterface $em): Response
@@ -173,11 +173,12 @@ class ArticleVoter extends Voter
         };
     }
 }
+```
 
-________________________________________
+---
 
-CONCLUSION
-----------
+## CONCLUSION
+
 Les failles MVC reposent sur une mauvaise séparation des responsabilités dans l'architecture 
 de l'application.
 
@@ -185,7 +186,7 @@ Dans notre cas, Symfony offre des outils robustes (FormTypes, Voters, Validators
 sont correctement utilisés, permettent de maintenir une séparation stricte des responsabilités et 
 de prévenir efficacement ces vulnérabilités.
 
-________________________________________
+---
 
-NIVEAU DE RISQUE : MOYEN À ÉLEVÉ
-FACILITÉ D'EXPLOITATION : MOYENNE
+**NIVEAU DE RISQUE : MOYEN À ÉLEVÉ**  
+**FACILITÉ D'EXPLOITATION : MOYENNE**

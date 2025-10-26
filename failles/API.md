@@ -1,8 +1,7 @@
-LES API (Application Programming Interface)
-===========================================
+# LES API (Application Programming Interface)
 
-INTRODUCTION
-------------
+## INTRODUCTION
+
 API soit Application Programming Interface, ou interface de programmation d'application, est un 
 ensemble de règles qui permet à deux programmes ou systèmes de communiquer entre eux, sans qu'ils 
 aient besoin de connaître leurs fonctionnements internes.
@@ -11,7 +10,7 @@ Une API agit comme un intermédiaire standardisé entre différentes application
 l'échange de données et de fonctionnalités sans exposer le code source ou la logique interne 
 de chaque système.
 
-Exemple :
+**Exemple :**
 Quand vous utilisez une application météo sur votre téléphone, elle ne calcule pas elle-même 
 la météo. Elle envoie une requête vers une API qui formate correctement la requête puis l'envoie 
 vers le serveur météo, qui renvoie les données de nuages, de pluie, de température, etc.
@@ -19,11 +18,11 @@ vers le serveur météo, qui renvoie les données de nuages, de pluie, de tempé
 Il existe principalement deux types d'API dans le développement web moderne : les API REST et 
 les API GraphQL.
 
-________________________________________
+---
 
-LES API REST
-------------
-Présentation
+## LES API REST
+
+### Présentation
 
 L'un des types d'API les plus répandus est le REST, pour Representational State Transfer.
 
@@ -36,17 +35,20 @@ de JSON (JavaScript Object Notation), un format léger et facile à lire.
 REST est simple et largement compatible, mais il peut devenir lourd en informations car on reçoit 
 parfois plus de données que nécessaire.
 
-________________________________________
+---
 
-Exemple illustré : Application Météo
+### Exemple illustré : Application Météo
 
 Pour illustrer comment fonctionne une API REST, revenons sur l'exemple précédent de l'application 
 météo :
 
 1. L'application envoie une requête HTTP :
+   ```
    GET /api/weather?city=Paris
+   ```
 
 2. Le serveur reçoit la requête et renvoie les données au format JSON :
+   ```json
    {
      "city": "Paris",
      "temperature": 15,
@@ -54,17 +56,18 @@ météo :
      "humidity": 65,
      "wind_speed": 20
    }
+   ```
 
 3. L'application affiche les informations pertinentes à l'utilisateur
 
 Le problème ici : même si l'application n'a besoin que de la température et de la condition météo, 
 elle reçoit toutes les données (humidity, wind_speed, etc.). C'est là qu'intervient GraphQL.
 
-________________________________________
+---
 
-LES API GRAPHQL
----------------
-Présentation
+## LES API GRAPHQL
+
+### Présentation
 
 GraphQL, bien qu'étant une alternative à REST, n'est pas une API intermédiaire. Le serveur GraphQL 
 est lui-même l'API, recevant ainsi directement les requêtes du client sans intermédiaire.
@@ -75,16 +78,17 @@ L'API GraphQL ne possède qu'une seule URL d'entrée, souvent /graphql, et le cl
 le body une requête structurée sous forme de graphe. Là où l'URL d'entrée de REST dépend de la 
 requête, qui est elle-même dans l'URL.
 
-________________________________________
+---
 
-Exemple illustré
+### Exemple illustré
 
 Au lieu de la requête REST GET /users?id=1 qui renvoie toutes les informations d'un utilisateur,
 
 dans le cas où on recherche une journaliste, on peut demander de n'avoir seulement que son nom, 
 ses articles et leurs dates de publications, rien de plus.
 
-Requête GraphQL :
+**Requête GraphQL :**
+```graphql
 {
   user(id: 1) {
     name
@@ -94,8 +98,10 @@ Requête GraphQL :
     }
   }
 }
+```
 
 De son côté, une fois la requête reçue, le serveur enverra exactement ce qui a été demandé :
+```json
 {
   "data": {
     "user": {
@@ -113,46 +119,48 @@ De son côté, une fois la requête reçue, le serveur enverra exactement ce qui
     }
   }
 }
+```
 
 Pas de données superflues, juste ce qui est nécessaire.
 
-________________________________________
+---
 
-COMPARAISON REST vs GRAPHQL
-----------------------------
+## COMPARAISON REST vs GRAPHQL
+
 Pour comparer les 2 API :
 
-REST :
-• Avantages :
-  - Simple
-  - Largement utilisé
-  - Compatible avec presque tous les clients
-  - Facile à mettre en place
+### REST :
+**Avantages :**
+- Simple
+- Largement utilisé
+- Compatible avec presque tous les clients
+- Facile à mettre en place
 
-• Inconvénients :
-  - Parfois lourd en informations
-  - Chaque ressource a sa propre URL
-  - Peut nécessiter plusieurs requêtes pour obtenir des données liées
+**Inconvénients :**
+- Parfois lourd en informations
+- Chaque ressource a sa propre URL
+- Peut nécessiter plusieurs requêtes pour obtenir des données liées
 
-GraphQL :
-• Avantages :
-  - Récupère exactement les données demandées
-  - Une seule URL d'entrée
-  - Pratique pour des relations complexes entre données
-  - Réduit le nombre de requêtes nécessaires
+### GraphQL :
+**Avantages :**
+- Récupère exactement les données demandées
+- Une seule URL d'entrée
+- Pratique pour des relations complexes entre données
+- Réduit le nombre de requêtes nécessaires
 
-• Inconvénients :
-  - Mise en place plus complexe
-  - Nécessite un schéma précis
-  - Moins pratique pour de petits projets simples
-  - Courbe d'apprentissage plus importante
+**Inconvénients :**
+- Mise en place plus complexe
+- Nécessite un schéma précis
+- Moins pratique pour de petits projets simples
+- Courbe d'apprentissage plus importante
 
-________________________________________
+---
 
-EXEMPLES SYMFONY
-----------------
-API REST avec API Platform
+## EXEMPLES SYMFONY
 
+### API REST avec API Platform
+
+```php
 // Entity User
 #[ApiResource(
     operations: [
@@ -182,11 +190,13 @@ class User
 // POST   /api/users       (créer un utilisateur)
 // PUT    /api/users/1     (modifier un utilisateur)
 // DELETE /api/users/1     (supprimer un utilisateur)
+```
 
-________________________________________
+---
 
-API GraphQL avec API Platform
+### API GraphQL avec API Platform
 
+```php
 // Installer le support GraphQL
 composer require api-platform/graphql
 
@@ -211,33 +221,35 @@ mutation {
     }
   }
 }
+```
 
-________________________________________
+---
 
-SÉCURITÉ DES API
-----------------
+## SÉCURITÉ DES API
+
 Que ce soit REST ou GraphQL, la sécurité est primordiale :
 
-• Authentication et Authorization :
-  - Tokens JWT (JSON Web Tokens)
-  - OAuth 2.0
-  - API Keys
+### Authentication et Authorization :
+- Tokens JWT (JSON Web Tokens)
+- OAuth 2.0
+- API Keys
 
-• Rate Limiting :
-  - Limiter le nombre de requêtes par utilisateur/IP
-  - Prévenir les attaques DDoS
+### Rate Limiting :
+- Limiter le nombre de requêtes par utilisateur/IP
+- Prévenir les attaques DDoS
 
-• Validation des données :
-  - Valider toutes les entrées
-  - Utiliser les Constraints Symfony
+### Validation des données :
+- Valider toutes les entrées
+- Utiliser les Constraints Symfony
 
-• CORS (Cross-Origin Resource Sharing) :
-  - Configurer correctement les origines autorisées
+### CORS (Cross-Origin Resource Sharing) :
+- Configurer correctement les origines autorisées
 
-• HTTPS :
-  - Toujours utiliser HTTPS en production
+### HTTPS :
+- Toujours utiliser HTTPS en production
 
-Exemple Symfony (config/packages/nelmio_cors.yaml) :
+**Exemple Symfony (config/packages/nelmio_cors.yaml) :**
+```yaml
 nelmio_cors:
     defaults:
         origin_regex: true
@@ -245,11 +257,12 @@ nelmio_cors:
         allow_methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
         allow_headers: ['Content-Type', 'Authorization']
         max_age: 3600
+```
 
-________________________________________
+---
 
-CONCLUSION
-----------
+## CONCLUSION
+
 Pour résumer :
 
 • Une API permet la communication entre applications,
@@ -265,7 +278,7 @@ web complexes et possédant un grand nombre de données.
 Symfony, via API Platform, supporte excellemment les deux approches, permettant aux développeurs 
 de choisir la solution la plus adaptée à leurs besoins.
 
-________________________________________
+---
 
-NIVEAU DE COMPLEXITÉ REST : FAIBLE
-NIVEAU DE COMPLEXITÉ GRAPHQL : MOYEN À ÉLEVÉ
+**NIVEAU DE COMPLEXITÉ REST : FAIBLE**  
+**NIVEAU DE COMPLEXITÉ GRAPHQL : MOYEN À ÉLEVÉ**
