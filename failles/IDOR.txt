@@ -1,0 +1,158 @@
+FAILLE IDOR (Insecure Direct Object Reference)
+==============================================
+
+INTRODUCTION
+------------
+IDOR est une vulnérabilité permettant à un attaquant d'accéder directement à des objets (fichiers, 
+données, ressources) en manipulant les identifiants sans vérification d'autorisation appropriée.
+
+L'attaquant exploite le fait que l'application utilise des identifiants prévisibles ou accessibles 
+pour référencer directement des ressources, sans vérifier si l'utilisateur a réellement le droit 
+d'y accéder.
+
+________________________________________
+
+FONCTIONNEMENT
+--------------
+L'attaquant modifie un paramètre d'identifiant dans l'URL, un formulaire ou une requête API pour 
+accéder à des ressources qui ne lui appartiennent pas.
+
+Exemple :
+  URL vulnérable : /api/users/123/profile
+  Attaque : /api/users/124/profile (accès au profil d'un autre utilisateur)
+
+Le site ne vérifie pas si l'utilisateur connecté a le droit d'accéder à la ressource demandée, 
+il se contente de vérifier que la ressource existe.
+
+________________________________________
+
+EXEMPLES CONCRETS
+-----------------
+1. /invoices/1001 → /invoices/1002 (factures d'autres clients)
+
+2. /documents/download?file=user_123.pdf → file=user_124.pdf
+
+3. /api/orders/456 → /api/orders/457 (commandes d'autres utilisateurs)
+
+4. /profile/edit/10 → /profile/edit/11 (modification du profil d'autrui)
+
+5. /messages/read/99 → /messages/read/100 (lecture de messages privés d'autrui)
+
+________________________________________
+
+CONSÉQUENCES POSSIBLES
+----------------------
+• Accès non autorisé aux données sensibles
+• Modification ou suppression de ressources d'autres utilisateurs
+• Violation de la confidentialité
+• Vol d'informations personnelles
+• Manipulation de données financières
+• Usurpation de compte
+
+________________________________________
+
+PROTECTION
+----------
+Plusieurs techniques permettent d'éviter les failles IDOR :
+
+• Vérifier SYSTÉMATIQUEMENT les autorisations avant chaque accès
+
+• Utiliser des identifiants non prédictibles (UUID au lieu d'auto-increment)
+
+• Implémenter un système de contrôle d'accès robuste
+
+• Vérifier que l'utilisateur connecté a le droit d'accéder à la ressource
+
+• Utiliser des références indirectes (mapping interne)
+
+• Logger les tentatives d'accès non autorisées
+
+________________________________________
+
+CAS SYMFONY
+-----------
+Symfony offre plusieurs mécanismes pour se protéger contre IDOR :
+
+• Security Voters pour vérifier les permissions
+• Expressions de sécurité dans les routes
+• Extensions Doctrine pour filtrer automatiquement les résultats
+• API Platform avec contrôles d'accès intégrés
+
+________________________________________
+
+EXEMPLES SYMFONY
+----------------
+// Mauvais exemple (VULNÉRABLE)
+#[Route('/invoice/{id}')]
+public function show(Invoice $invoice): Response
+{
+    return $this->render('invoice/show.html.twig', ['invoice' => $invoice]);
+}
+
+// Bon exemple (SÉCURISÉ)
+#[Route('/invoice/{id}')]
+public function show(Invoice $invoice): Response
+{
+    $this->denyAccessUnlessGranted('VIEW', $invoice);
+    return $this->render('invoice/show.html.twig', ['invoice' => $invoice]);
+}
+
+// Ou avec Security Voter
+class InvoiceVoter extends Voter
+{
+    protected function supports(string $attribute, mixed $subject): bool
+    {
+        return $subject instanceof Invoice && in_array($attribute, ['VIEW', 'EDIT']);
+    }
+
+    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
+    {
+        $user = $token->getUser();
+        return $subject->getOwner() === $user;
+    }
+}
+
+// Utilisation d'UUID au lieu d'ID auto-incrémentés
+use Symfony\Component\Uid\Uuid;
+
+#[ORM\Entity]
+class Invoice
+{
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    private Uuid $id;
+
+    public function __construct()
+    {
+        $this->id = Uuid::v4();  // Génère un UUID aléatoire non prévisible
+    }
+}
+
+________________________________________
+
+OUTILS DE DÉTECTION
+-------------------
+• Tests manuels en modifiant les IDs dans les URLs
+• Burp Suite pour automatiser les tests
+• OWASP ZAP
+• Tests d'intrusion automatisés
+• Code review et audits de sécurité
+
+________________________________________
+
+CONCLUSION
+----------
+Les failles IDOR sont parmi les plus simples à exploiter mais aussi parmi les plus faciles à 
+prévenir avec une bonne architecture.
+
+Dans notre cas, Symfony offre des outils robustes (Voters, expressions de sécurité) qui, lorsqu'ils 
+sont systématiquement utilisés, permettent de vérifier les autorisations et de prévenir efficacement 
+ces vulnérabilités.
+
+La règle d'or : ne JAMAIS faire confiance à un identifiant fourni par l'utilisateur sans vérifier 
+ses permissions.
+
+________________________________________
+
+NIVEAU DE RISQUE : ÉLEVÉ
+FACILITÉ D'EXPLOITATION : TRÈS FACILE
