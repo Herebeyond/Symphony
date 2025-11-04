@@ -46,10 +46,37 @@ xxxxx.yyyyy.zzzzz
 **AVANT DE COMMENCER :**
 - ✅ **Symfony Docker** installé et fonctionnel (voir [INSTALLATION.md](INSTALLATION.md))
 - ✅ **Containers Docker** en cours d'exécution
-- ✅ **Entité User** avec système d'authentification
-- ✅ **Base de données** configurée
+- ✅ **PostgreSQL + Adminer** installés et démarrés (voir [AJOUT-ADMINER.md](AJOUT-ADMINER.md)) - **OBLIGATOIRE !**
+- ✅ **Doctrine ORM** installé (installé automatiquement avec PostgreSQL)
 
 ## 🎯 INSTALLATION ÉTAPE PAR ÉTAPE
+
+### Étape 0 : Installer PostgreSQL + Adminer (OBLIGATOIRE)
+
+**⚠️ CRITIQUE :** Avant de commencer, vous DEVEZ avoir suivi le guide **[AJOUT-ADMINER.md](AJOUT-ADMINER.md)** qui installe :
+- ✅ PostgreSQL (base de données)
+- ✅ Extension PHP `pdo_pgsql`
+- ✅ Doctrine ORM et Maker Bundle
+- ✅ Configuration correcte de `DATABASE_URL`
+- ✅ Adminer (interface graphique - optionnel)
+
+**🚫 Si vous ne l'avez pas fait, vous aurez ces erreurs :**
+- `could not find driver`
+- `There are no commands defined in the "make" namespace`
+
+**✅ Vérification rapide avant de continuer :**
+```powershell
+# Vérifier que "database" ET "php" sont actifs
+docker compose ps
+
+# Vérifier que make:user existe
+docker compose exec php bin/console list make
+
+# Test de connexion PostgreSQL
+docker compose exec php bin/console dbal:run-sql "SELECT 1"
+```
+
+**Si ces commandes fonctionnent, passez à l'Étape 1. Sinon, suivez d'abord [AJOUT-ADMINER.md](AJOUT-ADMINER.md).**
 
 ### Étape 1 : Installer le Bundle JWT
 
@@ -80,30 +107,56 @@ docker compose exec php php bin/console lexik:jwt:generate-keypair
 
 **⚠️ IMPORTANT :** Ne JAMAIS commiter les clés dans Git ! Vérifiez que `config/jwt/` est dans `.gitignore`.
 
-### Étape 3 : Configurer le Pare-feu
+### Étape 3 : Créer l'Entité User AVANT de configurer le pare-feu
+
+**⚠️ IMPORTANT :** Vous DEVEZ créer l'entité User AVANT de modifier `security.yaml`, sinon vous aurez une erreur.
+
+```powershell
+# Créer l'entité User avec le système de sécurité
+docker compose exec php bin/console make:user
+```
+
+**Répondre aux questions :**
+- Nom de la classe : `User`
+- Stockage en base de données : `yes`
+- Propriété pour identifier : `email`
+- Hasher les mots de passe : `yes`
+
+**✅ Résultat attendu :**
+- Création de `src/Entity/User.php`
+- Création de `src/Repository/UserRepository.php`
+- **Modification automatique de `config/packages/security.yaml`**
+
+**Puis générer et appliquer la migration :**
+
+```powershell
+# Créer la migration
+docker compose exec php bin/console make:migration
+
+# Appliquer la migration
+docker compose exec php bin/console doctrine:migrations:migrate
+```
+
+### Étape 4 : Configurer le Pare-feu
 
 **⚠️ IMPORTANT :** Ne copiez-collez PAS tout le fichier ! Suivez les instructions ci-dessous pour modifier uniquement les sections nécessaires.
 
 Ouvrir le fichier `config/packages/security.yaml` et effectuer les modifications suivantes :
 
-#### 3.1 - Modifier la section `providers`
+#### 4.1 - Vérifier la section `providers`
 
-**Localiser cette section :**
+**La commande `make:user` devrait avoir créé automatiquement :**
 ```yaml
-providers:
-    users_in_memory: { memory: null }
-```
-
-**Remplacer par :**
-```yaml
-providers:
+providers: 
     app_user_provider:
         entity:
             class: App\Entity\User
             property: email
 ```
 
-#### 3.2 - Ajouter deux nouveaux firewalls AVANT `main:`
+**Si ce n'est pas le cas**, localiser la section `providers:` et modifier/ajouter ce contenu.
+
+#### 4.2 - Ajouter deux nouveaux firewalls AVANT `main:`
 
 **Localiser la section `firewalls:`** et **APRÈS le firewall `dev:`**, ajouter ces deux nouveaux firewalls :
 
@@ -130,10 +183,10 @@ firewalls:
     
     main:
         lazy: true
-        provider: app_user_provider  # ⬅️ Modifier aussi cette ligne
+        provider: app_user_provider  # ⬅️ Vérifier que c'est bien app_user_provider
 ```
 
-#### 3.3 - Modifier la section `access_control`
+#### 4.3 - Modifier la section `access_control`
 
 **Localiser cette section :**
 ```yaml
@@ -150,50 +203,35 @@ access_control:
 ```
 
 **📝 Résumé des modifications :**
-1. ✅ Provider : Pointer vers l'entité `User` avec propriété `email`
-2. ✅ Firewalls : Ajouter `login` et `api` avant `main`
-3. ✅ Access control : Autoriser `/api/login` publiquement, protéger `/api` avec authentification
-4. ✅ Main firewall : Changer le provider de `users_in_memory` à `app_user_provider`
+1. ✅ Créer l'entité User AVANT toute modification de security.yaml
+2. ✅ Provider : Vérifié automatiquement par `make:user`
+3. ✅ Firewalls : Ajouter `login` et `api` avant `main`
+4. ✅ Access control : Autoriser `/api/login` publiquement, protéger `/api` avec authentification
 
-### Étape 4 : Configurer les Routes
+### Étape 5 : Configurer les Routes
 
-Créer ou modifier le fichier `config/routes.yaml` :
+Ouvrir le fichier `config/routes.yaml` et **ajouter à la fin du fichier** (après la section `controllers:`) :
 
 ```yaml
+# Route pour l'authentification JWT
+api_login_check:
+    path: /api/login_check
+```
+
+**Exemple de fichier complet :**
+```yaml
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+
+# ⬇️ AJOUTER CETTE ROUTE ICI ⬇️
 api_login_check:
     path: /api/login_check
 ```
 
 **📝 Note :** Cette route est gérée automatiquement par le bundle JWT. Vous n'avez pas besoin de créer de contrôleur.
-
-### Étape 5 : Créer une Entité User
-
-Si vous n'avez pas encore d'entité User :
-
-```powershell
-# Créer l'entité User avec le système de sécurité
-docker compose exec php bin/console make:user
-```
-
-**Répondre aux questions :**
-- Nom de la classe : `User`
-- Stockage en base de données : `yes`
-- Propriété pour identifier : `email`
-- Hasher les mots de passe : `yes`
-
-**✅ Résultat attendu :**
-- Création de `src/Entity/User.php`
-- Création de `src/Repository/UserRepository.php`
-
-**Puis générer et appliquer la migration :**
-
-```powershell
-# Créer la migration
-docker compose exec php bin/console make:migration
-
-# Appliquer la migration
-docker compose exec php bin/console doctrine:migrations:migrate
-```
 
 ### Étape 6 : Créer un Utilisateur de Test
 
