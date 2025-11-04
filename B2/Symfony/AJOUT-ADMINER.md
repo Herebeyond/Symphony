@@ -65,20 +65,26 @@ DATABASE_URL="postgresql://app:!ChangeMe!@database:5432/app?serverVersion=16&cha
 
 **📝 Explication :** Docker utilise des noms de services (`database`) et non `localhost` ou `127.0.0.1`.
 
-#### 3.2 : Installer l'Extension PostgreSQL PHP (OBLIGATOIRE)
+#### 3.2 : Vérifier l'installation de l'extension PostgreSQL PHP
+
+L'installation de `symfony/orm-pack` devrait avoir automatiquement ajouté l'extension `pdo_pgsql` dans votre `Dockerfile`. Vérifions :
 
 ```powershell
-# Démarrer tous les conteneurs
-docker compose up -d --wait
-
-# Installer l'extension PostgreSQL requise
-docker compose exec php install-php-extensions pdo_pgsql
-
-# Arrêter les conteneurs pour la reconstruction
-docker compose down
+# Vérifier si pdo_pgsql est dans le Dockerfile
+Select-String -Path ".\Dockerfile" -Pattern "pdo_pgsql"
 ```
 
-**📝 Pourquoi :** Le template de base n'inclut pas `pdo_pgsql` par défaut, causant des erreurs "could not find driver".
+**✅ Si la ligne existe :** Parfait ! L'extension sera installée automatiquement lors de la construction de l'image à l'étape 5.
+
+**❌ Si la ligne n'existe PAS :** Ajoutez manuellement cette ligne dans votre `Dockerfile` après la section `install-php-extensions` (autour de la ligne 40) :
+
+```dockerfile
+###> doctrine/doctrine-bundle ###
+RUN install-php-extensions pdo_pgsql
+###< doctrine/doctrine-bundle ###
+```
+
+**📝 Pourquoi cette vérification :** Le template de base n'inclut pas `pdo_pgsql` par défaut. Sans cette extension, le conteneur PHP ne pourra pas se connecter à PostgreSQL et restera "unhealthy".
 
 ### Étape 4 : Ajouter Adminer au compose.override.yaml
 
@@ -97,39 +103,51 @@ Ajoutez seulement cette section à votre fichier `compose.override.yaml` (dans l
       - database
 ```
 
-### Étape 5 : Reconstruire et Redémarrer les Services
+### Étape 5 : Reconstruire et Démarrer les Services
 
-**⚠️ IMPORTANT :** Nous devons reconstruire l'image Docker pour inclure l'extension pdo_pgsql de manière permanente.
+**⚠️ IMPORTANT :** Reconstruire l'image Docker pour inclure l'extension `pdo_pgsql` configurée à l'étape 3.2.
 
 ```powershell
 # Reconstruire l'image Docker avec l'extension PostgreSQL
 docker compose build --no-cache php
 
-# Démarrer avec Adminer et PostgreSQL
+# Démarrer tous les services avec Adminer et PostgreSQL
 docker compose up -d --wait
 ```
 
-**Si la construction échoue ou si un conteneur n'arrive pas à démarrer :**
+**⏱️ Temps de construction :** 3-5 minutes (première fois)
+
+**✅ Vérification réussie :** Tous les conteneurs doivent afficher "healthy" :
 
 ```powershell
-# Option 1: Réinstaller l'extension (temporaire - sera perdue au prochain rebuild)
+docker compose ps
+```
+
+**🔴 Si le conteneur PHP reste "unhealthy" :**
+
+Cela signifie généralement que l'extension `pdo_pgsql` n'est pas installée. Diagnostiquez et corrigez :
+
+```powershell
+# 1. Vérifier si l'extension est présente
+docker compose exec php php -m | Select-String -Pattern "pdo_pgsql"
+
+# Si rien n'est retourné, l'extension est absente. Installez-la temporairement :
 docker compose exec php install-php-extensions pdo_pgsql
 docker compose restart php
 
-# Option 2: Forcer une reconstruction complète
+# 2. Ajoutez l'extension dans le Dockerfile (voir étape 3.2) puis reconstruisez :
+docker compose build --no-cache php
+docker compose up -d
+```
+
+**🔴 En cas d'échec complet :**
+
+```powershell
+# Nettoyer complètement et recommencer
 docker compose down --volumes --remove-orphans
 docker compose build --no-cache
 docker compose up -d --wait
 ```
-
-**Vérifier l'intégrité des conteneurs**
-
-```powershell
-# Vérifier que tous les conteneurs sont sains
-docker compose ps
-```
-
-**✅ Tous les services doivent afficher "healthy" ou "Up"**
 
 ## ✅ Test de Fonctionnement
 
@@ -149,7 +167,24 @@ docker compose ps
 
 ## 🛑 En Cas de Problème
 
-Si vous rencontrez des erreurs lors de l'installation, consultez le **[Guide de Dépannage](DEPANNAGE.md)** qui contient toutes les solutions aux problèmes courants :
+### Problème : Le conteneur PHP reste "unhealthy"
+
+**Cause :** L'extension `pdo_pgsql` n'est pas installée dans l'image Docker.
+
+**Solution immédiate (temporaire) :**
+```powershell
+docker compose exec php install-php-extensions pdo_pgsql
+docker compose restart php
+```
+
+**Solution permanente :**
+1. Vérifiez que le `Dockerfile` contient la ligne `RUN install-php-extensions pdo_pgsql`
+2. Reconstruisez l'image : `docker compose build --no-cache php`
+3. Redémarrez : `docker compose up -d`
+
+---
+
+Pour d'autres problèmes, consultez le **[Guide de Dépannage](DEPANNAGE.md)** :
 - Extension PostgreSQL manquante (`could not find driver`)
 - Erreurs de connexion (`Connection refused`)
 - Conflits de ports
