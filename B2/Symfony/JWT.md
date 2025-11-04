@@ -82,45 +82,78 @@ docker compose exec php php bin/console lexik:jwt:generate-keypair
 
 ### Étape 3 : Configurer le Pare-feu
 
-Modifier le fichier `config/packages/security.yaml` :
+**⚠️ IMPORTANT :** Ne copiez-collez PAS tout le fichier ! Suivez les instructions ci-dessous pour modifier uniquement les sections nécessaires.
+
+Ouvrir le fichier `config/packages/security.yaml` et effectuer les modifications suivantes :
+
+#### 3.1 - Modifier la section `providers`
+
+**Localiser cette section :**
+```yaml
+providers:
+    users_in_memory: { memory: null }
+```
+
+**Remplacer par :**
+```yaml
+providers:
+    app_user_provider:
+        entity:
+            class: App\Entity\User
+            property: email
+```
+
+#### 3.2 - Ajouter deux nouveaux firewalls AVANT `main:`
+
+**Localiser la section `firewalls:`** et **APRÈS le firewall `dev:`**, ajouter ces deux nouveaux firewalls :
 
 ```yaml
-security:
-    # Configuration du password hasher
-    password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+firewalls:
+    dev:
+        pattern: ^/(_(profiler|wdt)|css|images|js)/
+        security: false
     
-    # Providers
-    providers:
-        app_user_provider:
-            entity:
-                class: App\Entity\User
-                property: email
+    # ⬇️ AJOUTER CES DEUX FIREWALLS ICI ⬇️
+    login:
+        pattern: ^/api/login
+        stateless: true
+        json_login:
+            check_path: /api/login_check
+            success_handler: lexik_jwt_authentication.handler.authentication_success
+            failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+    api:
+        pattern: ^/api
+        stateless: true
+        jwt: ~
+    # ⬆️ FIN DE L'AJOUT ⬆️
     
-    # Pare-feu
-    firewalls:
-        dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/
-            security: false
-            
-        login:
-            pattern: ^/api/login
-            stateless: true
-            json_login:
-                check_path: /api/login_check
-                success_handler: lexik_jwt_authentication.handler.authentication_success
-                failure_handler: lexik_jwt_authentication.handler.authentication_failure
-
-        api:
-            pattern: ^/api
-            stateless: true
-            jwt: ~
-
-    # Contrôle d'accès
-    access_control:
-        - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
+    main:
+        lazy: true
+        provider: app_user_provider  # ⬅️ Modifier aussi cette ligne
 ```
+
+#### 3.3 - Modifier la section `access_control`
+
+**Localiser cette section :**
+```yaml
+access_control:
+    - { path: ^/admin, roles: ROLE_ADMIN }
+    - { path: ^/profile, roles: ROLE_USER }
+```
+
+**Remplacer par (ou ajouter AVANT les autres règles) :**
+```yaml
+access_control:
+    - { path: ^/api/login, roles: PUBLIC_ACCESS }
+    - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
+```
+
+**📝 Résumé des modifications :**
+1. ✅ Provider : Pointer vers l'entité `User` avec propriété `email`
+2. ✅ Firewalls : Ajouter `login` et `api` avant `main`
+3. ✅ Access control : Autoriser `/api/login` publiquement, protéger `/api` avec authentification
+4. ✅ Main firewall : Changer le provider de `users_in_memory` à `app_user_provider`
 
 ### Étape 4 : Configurer les Routes
 
