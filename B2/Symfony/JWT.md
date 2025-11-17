@@ -48,35 +48,58 @@ xxxxx.yyyyy.zzzzz
 - ✅ **Containers Docker** en cours d'exécution
 - ✅ **PostgreSQL + Adminer** installés et démarrés (voir [AJOUT-ADMINER.md](AJOUT-ADMINER.md)) - **OBLIGATOIRE !**
 - ✅ **Doctrine ORM** installé (installé automatiquement avec PostgreSQL)
+- ✅ **MakerBundle** installé (sera vérifié à l'étape 0)
 
 ## 🎯 INSTALLATION ÉTAPE PAR ÉTAPE
 
-### Étape 0 : Installer PostgreSQL + Adminer (OBLIGATOIRE)
+### Étape 0 : Vérifier et Installer les Prérequis (OBLIGATOIRE)
 
 **⚠️ CRITIQUE :** Avant de commencer, vous DEVEZ avoir suivi le guide **[AJOUT-ADMINER.md](AJOUT-ADMINER.md)** qui installe :
 - ✅ PostgreSQL (base de données)
 - ✅ Extension PHP `pdo_pgsql`
-- ✅ Doctrine ORM et Maker Bundle
+- ✅ Doctrine ORM
 - ✅ Configuration correcte de `DATABASE_URL`
 - ✅ Adminer (interface graphique - optionnel)
 
-**🚫 Si vous ne l'avez pas fait, vous aurez ces erreurs :**
-- `could not find driver`
-- `There are no commands defined in the "make" namespace`
+#### 0.1 : Vérification rapide
 
-**✅ Vérification rapide avant de continuer :**
 ```powershell
 # Vérifier que "database" ET "php" sont actifs
 docker compose ps
-
-# Vérifier que make:user existe
-docker compose exec php bin/console list make
 
 # Test de connexion PostgreSQL
 docker compose exec php bin/console dbal:run-sql "SELECT 1"
 ```
 
-**Si ces commandes fonctionnent, passez à l'Étape 1. Sinon, suivez d'abord [AJOUT-ADMINER.md](AJOUT-ADMINER.md).**
+**Si ces commandes échouent, suivez d'abord [AJOUT-ADMINER.md](AJOUT-ADMINER.md).**
+
+#### 0.2 : Installer MakerBundle (OBLIGATOIRE)
+
+Le template de base ne contient pas le MakerBundle. Vérifions s'il est installé :
+
+```powershell
+# Vérifier si make:user existe
+docker compose exec php bin/console list make
+```
+
+**❌ Si vous voyez l'erreur `There are no commands defined in the "make" namespace` :**
+
+```powershell
+# Installer le MakerBundle
+docker compose exec php composer require symfony/maker-bundle --dev
+```
+
+**⏱️ Temps d'installation :** 1-2 minutes
+
+**✅ Vérification après installation :**
+```powershell
+# Vérifier que make:user est disponible
+docker compose exec php bin/console list make
+```
+
+**Résultat attendu :** Liste des commandes `make:*` incluant `make:user`
+
+**Si la commande échoue toujours, consultez la section Dépannage en fin de guide.**
 
 ### Étape 1 : Installer le Bundle JWT
 
@@ -517,6 +540,45 @@ docker compose exec php bin/console lexik:jwt:decode <TOKEN>
 - ✅ Vérifier les permissions des fichiers de clés
 - ✅ Vérifier que le chemin vers les clés est correct
 
+**Erreur "There are no commands defined in the 'make' namespace" :**
+
+Cette erreur signifie que le **MakerBundle n'est pas installé** ou **pas enregistré**.
+
+**Solution 1 : Installer le MakerBundle**
+```powershell
+docker compose exec php composer require symfony/maker-bundle --dev
+```
+
+**Solution 2 : Vérifier l'enregistrement dans config/bundles.php**
+
+Si après installation l'erreur persiste, vérifiez que le bundle est enregistré :
+
+```powershell
+# Vérifier le contenu de config/bundles.php
+docker compose exec php cat config/bundles.php
+```
+
+Le fichier doit contenir cette ligne :
+```php
+Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true, 'test' => true],
+```
+
+**Si la ligne est absente**, ajoutez-la manuellement dans `config/bundles.php` :
+
+```php
+<?php
+
+return [
+    // ... autres bundles ...
+    Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true, 'test' => true],
+];
+```
+
+Puis videz le cache :
+```powershell
+docker compose exec php bin/console cache:clear
+```
+
 ### Commandes Utiles
 
 ```powershell
@@ -598,7 +660,10 @@ JWT_PASSPHRASE=votre_passphrase_securisee
 ## 📊 Récapitulatif des Commandes
 
 ```powershell
-# Installation
+# Prérequis : Installer MakerBundle (si pas déjà installé)
+docker compose exec php composer require symfony/maker-bundle --dev
+
+# Installation JWT
 docker compose exec php composer require lexik/jwt-authentication-bundle
 
 # Génération des clés
