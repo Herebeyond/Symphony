@@ -66,6 +66,14 @@ Solutions aux problèmes courants.
 - Erreurs Symfony
 - Problèmes de cache
 
+### 🌍 [NGROK.md](NGROK.md)
+Exposer votre API Symfony sur Internet avec ngrok.
+- Installation et configuration de ngrok
+- Créer un tunnel sécurisé
+- Obtenir une URL publique
+- Tester l'API depuis n'importe où
+- Partager l'API avec des clients ou webhooks
+
 ## 🎯 Par où commencer ?
 
 ### 1️⃣ Débutant complet
@@ -85,6 +93,9 @@ Référez-vous à **[DEPANNAGE.md](DEPANNAGE.md)** pour trouver des solutions au
 
 ### 6️⃣ Visualiser l'architecture
 Consultez **[DIAGRAMMES.md](DIAGRAMMES.md)** pour comprendre la structure du projet.
+
+### 7️⃣ Exposer l'API sur Internet
+Suivez **[NGROK.md](NGROK.md)** pour rendre votre API accessible depuis n'importe où avec ngrok.
 
 ## 🔗 Lien avec Flutter
 
